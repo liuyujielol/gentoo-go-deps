@@ -1,0 +1,119 @@
+name: "nekoray"
+on:
+  workflow_dispatch:
+    inputs:
+      # https://github.com/MetaCubeX/Clash.Meta v1.14.1
+      # net-proxy/clash-meta/clash-meta-1.14.1.ebuild
+      # release artiface: ${PN}-${PV}-deps.tar.xz: clash-meta-1.14.1-deps.tar.xz
+      # release tag: ${P}=${PN}-${PV}: clash-meta-1.14.1
+
+      LANG:
+        type: choice
+        description: "generate golang(go-mod/vendor) or javascript(node_modules) deps"
+        options:
+        - golang
+        - javascript
+        - javascript(pnpm)
+
+      REPO:
+        description: "github repo name: MetaCubeX/Clash.Meta"
+        required: true
+
+      TAG:
+        description: "github tag: v1.14.1"
+        required: true
+
+      P:
+        description: "P in ebuild: clash-meta-1.14.1"
+        required: true
+
+      WORKDIR:
+        description: "(optional)source directory to perform scripts, default to empty string"
+        default: ''
+
+jobs:
+  Generator:
+    permissions: write-all # required by push tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout input repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.REPO }}
+          ref: ${{ inputs.TAG }}
+          fetch-depth: 0
+          path: "input"
+
+      - name: delete old tag
+        env:
+          P: ${{ inputs.P }}
+          LANG: ${{ inputs.LANG }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git tag --delete ${P} || echo yes
+
+      - name: update go version
+        if: inputs.LANG == 'golang'
+        uses: actions/setup-go@v4
+        with:
+          go-version: '>=1.21.0'
+
+      - name: Generate golang deps
+        if: inputs.LANG == 'golang'
+        env:
+          P: ${{ inputs.P }}
+          WORKDIR: ${{ inputs.WORKDIR }}
+        run: |
+          git tag ${P} -m "${P}-deps.tar.xz"
+          cd "input/${WORKDIR}"
+          GO_MOD="${PWD}/go/go-mod"
+          bash libs/get_source.sh
+          cd "go/cmd/nekobox_core"
+          GOMODCACHE="${GO_MOD}" go mod download -modcacherw
+          cd "../nekoray_core"
+          GOMODCACHE="${GO_MOD}" go mod download -modcacherw
+          tar --create --auto-compress --file /tmp/${P}-ray-deps.tar.xz "${GO_MOD}"
+
+      - name: Generate javascript node_modules
+        if: inputs.LANG == 'javascript'
+        env:
+          P: ${{ inputs.P }}
+          WORKDIR: ${{ inputs.WORKDIR }}
+        run: |
+          git tag ${P} -m "${P}-node_modules.tar.xz"
+          cd "input/${WORKDIR}"
+          npm install --legacy-peer-deps --cache "${PWD}"/npm-cache
+          tar --create --auto-compress --file /tmp/${P}-node_modules.tar.xz node_modules
+          rm -rf node_modules
+
+      - name: push tag
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
+          tags: true
+
+      - name: upload goland deps to release artifaces
+        if: inputs.LANG == 'golang'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            /tmp/${{ inputs.P }}-deps.tar.xz
+            /tmp/${{ inputs.P }}-vendor.tar.xz
+          tag_name: ${{ inputs.P }}
+
+      - name: upload javascript deps to release artifaces
+        if: inputs.LANG == 'javascript'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            /tmp/${{ inputs.P }}-node_modules.tar.xz
+          tag_name: ${{ inputs.P }}
+
+
