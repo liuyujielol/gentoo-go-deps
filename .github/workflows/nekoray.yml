@@ -70,15 +70,21 @@ jobs:
           P: ${{ inputs.P }}
           WORKDIR: ${{ inputs.WORKDIR }}
         run: |
-          git tag ${P} -m "${P}-deps.tar.xz"
+          git tag ${P} -m "${P}-deps.tar.xz ${P}-vendor.tar.xz"
           cd "input/${WORKDIR}"
-          GO_MOD="${PWD}/go/go-mod"
           bash libs/get_source.sh
           cd "go/cmd/nekobox_core"
-          GOMODCACHE="${GO_MOD}" go mod download -modcacherw
+          GOMODCACHE="${PWD}"/go-mod go mod download -modcacherw
+          tar --create --auto-compress --file /tmp/${P}-box-deps.tar.xz go-mod
+          rm -rf go-mod
+          go mod vendor
+          tar --create --auto-compress --file /tmp/${P}-box-vendor.tar.xz vendor
           cd "../nekoray_core"
-          GOMODCACHE="${GO_MOD}" go mod download -modcacherw
-          tar --create --auto-compress --file /tmp/${P}-deps.tar.xz "${GO_MOD}"
+          GOMODCACHE="${PWD}"/go-mod go mod download -modcacherw
+          tar --create --auto-compress --file /tmp/${P}-ray-deps.tar.xz go-mod
+          rm -rf go-mod
+          go mod vendor
+          tar --create --auto-compress --file /tmp/${P}-ray-vendor.tar.xz vendor
 
       - name: Generate javascript node_modules
         if: inputs.LANG == 'javascript'
@@ -104,7 +110,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            /tmp/${{ inputs.P }}-deps.tar.xz
+            /tmp/${{ inputs.P }}-box-deps.tar.xz
+            /tmp/${{ inputs.P }}-box-vendor.tar.xz
+            /tmp/${{ inputs.P }}-ray-deps.tar.xz
+            /tmp/${{ inputs.P }}-ray-vendor.tar.xz
           tag_name: ${{ inputs.P }}
 
       - name: upload javascript deps to release artifaces
