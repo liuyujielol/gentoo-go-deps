@@ -12,6 +12,7 @@ on:
         description: "generate golang(go-mod/vendor) or javascript(node_modules) deps"
         options:
         - golang
+        - rust
         - javascript
         - javascript(pnpm)
 
@@ -77,6 +78,19 @@ jobs:
           rm -rf go-mod
           go mod vendor
           tar --create --auto-compress --file /tmp/${P}-vendor.tar.xz vendor
+
+      - name: Generate rust deps
+        if: inputs.LANG == 'rust'
+        env:
+          P: ${{ inputs.P }}
+          WORKDIR: ${{ inputs.WORKDIR }}
+        run: |
+          git tag ${P} -m "${P}-deps.tar.xz ${P}-vendor.tar.xz"
+          export CARGO_HOME="/tmp/cargo_home"
+          cd "input/${WORKDIR}"
+          cargo vendor
+          tar --create --auto-compress --file /tmp/${P}-vendor.tar.xz vendor
+          tar --create --auto-compress --file /tmp/${P}-deps.tar.xz /tmp/cargo_home
 
       - name: Generate javascript node_modules
         if: inputs.LANG == 'javascript'
