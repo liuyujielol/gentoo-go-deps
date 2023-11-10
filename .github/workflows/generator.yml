@@ -12,6 +12,7 @@ on:
         description: "generate golang(go-mod/vendor) or javascript(node_modules) deps"
         options:
         - golang
+        - rust
         - javascript
         - javascript(pnpm)
 
@@ -78,6 +79,19 @@ jobs:
           go mod vendor
           tar --create --auto-compress --file /tmp/${P}-vendor.tar.xz vendor
 
+      - name: Generate rust deps
+        if: inputs.LANG == 'rust'
+        env:
+          P: ${{ inputs.P }}
+          WORKDIR: ${{ inputs.WORKDIR }}
+        run: |
+          git tag ${P} -m "${P}-deps.tar.xz ${P}-vendor.tar.xz"
+          export CARGO_HOME="/tmp/cargo_home"
+          cd "input/${WORKDIR}"
+          cargo vendor
+          tar --create --auto-compress --file /tmp/${P}-vendor.tar.xz vendor
+          tar --create --auto-compress --file /tmp/${P}-cargo.tar.xz /tmp/cargo_home
+
       - name: Generate javascript node_modules
         if: inputs.LANG == 'javascript'
         env:
@@ -121,6 +135,15 @@ jobs:
         with:
           files: |
             /tmp/${{ inputs.P }}-deps.tar.xz
+            /tmp/${{ inputs.P }}-vendor.tar.xz
+          tag_name: ${{ inputs.P }}
+
+      - name: upload rust deps to release artifaces
+        if: inputs.LANG == 'rust'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            /tmp/${{ inputs.P }}-cargo.tar.xz
             /tmp/${{ inputs.P }}-vendor.tar.xz
           tag_name: ${{ inputs.P }}
 
