@@ -78,7 +78,7 @@ jobs:
           GOMODCACHE="${GO_MOD}" go mod download -modcacherw
           cd "../nekoray_core"
           GOMODCACHE="${GO_MOD}" go mod download -modcacherw
-          tar --create --auto-compress --file /tmp/${P}-ray-deps.tar.xz "${GO_MOD}"
+          tar --create --auto-compress --file /tmp/${P}-deps.tar.xz "${GO_MOD}"
 
       - name: Generate javascript node_modules
         if: inputs.LANG == 'javascript'
@@ -105,7 +105,6 @@ jobs:
         with:
           files: |
             /tmp/${{ inputs.P }}-deps.tar.xz
-            /tmp/${{ inputs.P }}-vendor.tar.xz
           tag_name: ${{ inputs.P }}
 
       - name: upload javascript deps to release artifaces
