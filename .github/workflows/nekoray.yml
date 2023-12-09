@@ -1,0 +1,79 @@
+name: "nekoray"
+on:
+  workflow_dispatch:
+    inputs:
+      # https://github.com/MatsuriDayo/nekoray 3.26
+      # net-proxy/nekoray/nekoray-3.26.ebuild
+      # release artiface: ${PN}-${PV}-deps.tar.xz: nekoray-3.26-deps.tar.xz
+      # release tag: ${P}=${PN}-${PV}: nekoray-3.26
+      TAG:
+        description: "github tag: v1.14.1"
+        required: true
+
+      P:
+        description: "P in ebuild: clash-meta-1.14.1"
+        required: true
+
+jobs:
+  Generator:
+    permissions: write-all # required by push tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: 'MatsuriDayo/nekoray'
+          submodules: 'recursive'
+          ref: ${{ inputs.TAG }}
+          path: 'tmp/work/nekoray'
+
+      - name: delete old tag
+        env:
+          P: ${{ inputs.P }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git tag --delete ${P} || echo yes
+
+      - name: update go version
+        uses: actions/setup-go@v4
+        with:
+          go-version: 'stable'
+
+      - name: Generate golang deps
+        env:
+          P: ${{ inputs.P }}
+          TAG: ${{ inputs.TAG }}
+        run: |
+          git tag ${P} -m "${P}-fullsrc.tar.xz nekoray_core-${TAG}-deps.tar.xz nekobox_core-${TAG}-deps.tar.xz"
+          cd "tmp/work/nekoray"
+          bash ./libs/get_source.sh
+          XZ_OPT='-T0 -9' tar --create --auto-compress --file /tmp/${P}-fullsrc.tar.xz ../../work
+          pushd "go/cmd/nekoray_core"
+          GOMODCACHE="${PWD}"/go-mod go mod download -modcacherw
+          XZ_OPT='-T0 -9' tar --create --auto-compress --file /tmp/nekoray_core-${TAG}-deps.tar.xz go-mod
+          popd
+          pushd "go/cmd/nekobox_core"
+          GOMODCACHE="${PWD}"/go-mod go mod download -modcacherw
+          XZ_OPT='-T0 -9' tar --create --auto-compress --file /tmp/nekobox_core-${TAG}-deps.tar.xz go-mod
+
+      - name: push tag
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
+          tags: true
+
+      - name: upload goland deps to release artifaces
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            /tmp/${{ inputs.P }}-fullsrc.tar.xz
+            /tmp/nekoray_core-${{ inputs.TAG }}-deps.tar.xz
+            /tmp/nekobox_core-${{ inputs.TAG }}-deps.tar.xz
+          tag_name: ${{ inputs.P }}
