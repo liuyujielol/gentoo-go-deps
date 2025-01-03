@@ -135,6 +135,7 @@ jobs:
         run: |
           git tag ${P} -m "${P}-crates.tar.xz"
           cd "input/${WORKDIR}"
+          cargo check -r
           pycargoebuild -c
 
       - name: push tag
