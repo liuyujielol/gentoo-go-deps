@@ -128,6 +128,7 @@ jobs:
           git tag ${P} -m "${P}-crates.tar.xz"
           pip install pycargoebuild
           wget https://raw.githubusercontent.com/gentoo/gentoo/refs/heads/master/metadata/license-mapping.conf -O /tmp/license-mapping.conf
+          ech0 'BlueOak-1.0.0 = BlueOak-1.0.0' >> /tmp/license-mapping.conf
           cd "input/${WORKDIR}"
           pycargoebuild --crate-tarball --distdir /tmp/ --license-mapping /tmp/license-mapping.conf
 
