@@ -116,6 +116,9 @@ jobs:
           git tag ${P} -m "${P}-node_modules-pnpm.tar.xz"
           cd "input/${WORKDIR}"
           pnpm install --config.package-manager-strict=false
+          pnpm check
+          pnpm -r build
+          pnpm build
           tar --create --auto-compress --file /tmp/${P}-node_modules-pnpm.tar.xz node_modules
           rm -rf node_modules
 
