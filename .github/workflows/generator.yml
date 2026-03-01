@@ -129,8 +129,8 @@ jobs:
           tar --create --auto-compress --file /tmp/${P}-sdk-p3-node_modules-pnpm.tar.xz src/sdk/packages/client/node_modules
           tar --create --auto-compress --file /tmp/${P}-sdk-p4-node_modules-pnpm.tar.xz src/sdk/packages/loader/node_modules
           #pnpm --dir src/sdk run build
-          mkdir -p shims/build/
-          cp -r src/sdk/packages/loader/build "./shims/"
+          #mkdir -p shims/build/
+          #cp -r src/sdk/packages/loader/build "./shims/"
           pnpm --dir src/frontend install
           tar --create --auto-compress --file /tmp/${P}-frontend-node_modules-pnpm.tar.xz src/frontend/node_modules
           #pnpm --dir src/frontend run build
