@@ -204,10 +204,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            /tmp/${P}-sdk-p1-node_modules-pnpm.tar.xz
-            /tmp/${P}-sdk-p2-node_modules-pnpm.tar.xz
-            /tmp/${P}-sdk-p3-node_modules-pnpm.tar.xz
-            /tmp/${P}-sdk-p4-node_modules-pnpm.tar.xz
+            /tmp/${{ inputs.P }}-sdk-p1-node_modules-pnpm.tar.xz
+            /tmp/${{ inputs.P }}-sdk-p2-node_modules-pnpm.tar.xz
+            /tmp/${{ inputs.P }}-sdk-p3-node_modules-pnpm.tar.xz
+            /tmp/${{ inputs.P }}-sdk-p4-node_modules-pnpm.tar.xz
             /tmp/${{ inputs.P }}-frontend-node_modules-pnpm.tar.xz
           tag_name: ${{ inputs.P }}
 
