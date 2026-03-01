@@ -121,6 +121,7 @@ jobs:
           git tag ${P} -m "${P}-node_modules-pnpm.tar.xz"
           cd "input/"
           export NODE_NOWARNINGS=1
+          pnpm config set store-dir ./ --global
           echo -e        "\e[1m\e[92m==>\e[0m \e[1mBuilding Millennium assets...\e[0m"
           pnpm --dir src/sdk install
           pnpm --dir src/sdk run build
