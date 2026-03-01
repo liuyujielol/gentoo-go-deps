@@ -119,11 +119,15 @@ jobs:
           WORKDIR: ${{ inputs.WORKDIR }}
         run: |
           git tag ${P} -m "${P}-node_modules-pnpm.tar.xz"
-          cd "input/${WORKDIR}"
+          cd "input/"
           export NODE_NOWARNINGS=1
           echo -e        "\e[1m\e[92m==>\e[0m \e[1mBuilding Millennium assets...\e[0m"
-          pnpm install
-          pnpm run build
+          pnpm --dir src/sdk install
+          pnpm --dir src/sdk run build
+          mkdir -p shims/build/
+          cp -r src/sdk/packages/loader/build "./shims/"
+          pnpm --dir src/frontend install
+          pnpm --dir src/frontend run build
           tar --create --auto-compress --file /tmp/${P}-node_modules-pnpm.tar.xz node_modules
           rm -rf node_modules
 
