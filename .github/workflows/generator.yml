@@ -124,13 +124,16 @@ jobs:
           
           echo -e        "\e[1m\e[92m==>\e[0m \e[1mBuilding Millennium assets...\e[0m"
           pnpm --dir src/sdk install
-          tar --create --auto-compress --file /tmp/${P}-sdk-node_modules-pnpm.tar.xz src/sdk/node_modules
-          pnpm --dir src/sdk run build
+          tar --create --auto-compress --file /tmp/${P}-sdk-p1-node_modules-pnpm.tar.xz src/sdk/node_modules
+          tar --create --auto-compress --file /tmp/${P}-sdk-p2-node_modules-pnpm.tar.xz src/sdk/packages/browser/node_modules
+          tar --create --auto-compress --file /tmp/${P}-sdk-p3-node_modules-pnpm.tar.xz src/sdk/packages/client/node_modules
+          tar --create --auto-compress --file /tmp/${P}-sdk-p4-node_modules-pnpm.tar.xz src/sdk/packages/loader/node_modules
+          #pnpm --dir src/sdk run build
           mkdir -p shims/build/
           cp -r src/sdk/packages/loader/build "./shims/"
           pnpm --dir src/frontend install
           tar --create --auto-compress --file /tmp/${P}-frontend-node_modules-pnpm.tar.xz src/frontend/node_modules
-          pnpm --dir src/frontend run build
+          #pnpm --dir src/frontend run build
           rm -rf src/sdk/node_modules
           rm -rf src/frontend/node_modules
 
@@ -201,7 +204,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            /tmp/${{ inputs.P }}-sdk-node_modules-pnpm.tar.xz
+            /tmp/${P}-sdk-p1-node_modules-pnpm.tar.xz
+            /tmp/${P}-sdk-p2-node_modules-pnpm.tar.xz
+            /tmp/${P}-sdk-p3-node_modules-pnpm.tar.xz
+            /tmp/${P}-sdk-p4-node_modules-pnpm.tar.xz
             /tmp/${{ inputs.P }}-frontend-node_modules-pnpm.tar.xz
           tag_name: ${{ inputs.P }}
 
