@@ -132,6 +132,7 @@ jobs:
         run: |
           git tag ${P} -m "${P}-crates.tar.xz"
           pip install pycargoebuild
+          pip install meson
           wget https://raw.githubusercontent.com/gentoo/gentoo/refs/heads/master/metadata/license-mapping.conf -O /tmp/license-mapping.conf
           cd "input/${WORKDIR}"
           meson _build
