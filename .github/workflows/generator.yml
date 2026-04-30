@@ -134,7 +134,7 @@ jobs:
           pip install pycargoebuild
           wget https://raw.githubusercontent.com/gentoo/gentoo/refs/heads/master/metadata/license-mapping.conf -O /tmp/license-mapping.conf
           cd "input/${WORKDIR}"
-          apt-get install -y libssl-dev meson rustc libgtk-4-dev libadwaita-1-dev libgstreamer-plugins-bad1.0-dev
+          sudo apt-get install -y libssl-dev meson rustc libgtk-4-dev libadwaita-1-dev libgstreamer-plugins-bad1.0-dev
           meson _build
           pycargoebuild --crate-tarball --distdir /tmp/ --license-mapping /tmp/license-mapping.conf
 
