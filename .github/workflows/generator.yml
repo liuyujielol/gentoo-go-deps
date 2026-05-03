@@ -9,7 +9,7 @@ on:
         type: string
 
 permissions:
-  contents: write   # 需要创建 Release 和上传资产
+  contents: write
 
 jobs:
   build-and-release:
