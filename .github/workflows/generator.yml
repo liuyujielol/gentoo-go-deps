@@ -56,4 +56,4 @@ jobs:
             - Build Date: ${{ github.event.repository.updated_at }}
           draft: false
           prerelease: false
-          files: clash-verge-rev-web-${{ inputs.tag }}.tar.xz
+          files: /tmp/clash-verge-rev-${{ inputs.tag }}-web.tar.xz
